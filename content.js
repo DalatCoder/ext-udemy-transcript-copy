@@ -1,0 +1,152 @@
+// Content script để kiểm tra và lấy transcript
+class TranscriptExtractor {
+  constructor() {
+    this.transcriptSelector = '[class*="transcript--transcript-panel"]';
+    this.observer = null;
+    this.init();
+  }
+
+  init() {
+    // Kiểm tra ngay khi script được load
+    this.checkForTranscript();
+
+    // Theo dõi thay đổi DOM để phát hiện transcript được load sau
+    this.observeDOM();
+  }
+
+  checkForTranscript() {
+    const transcriptElement = document.querySelector(this.transcriptSelector);
+
+    if (transcriptElement) {
+      console.log("🎯 Transcript panel được tìm thấy!");
+      this.extractTranscriptContent(transcriptElement);
+      return true;
+    } else {
+      console.log("⏳ Chưa tìm thấy transcript panel...");
+      return false;
+    }
+  }
+
+  extractTranscriptContent(transcriptElement) {
+    try {
+      // Lấy tất cả text content bên trong transcript panel
+      const textContent =
+        transcriptElement.textContent || transcriptElement.innerText;
+
+      if (textContent.trim()) {
+        console.log("📄 Transcript content:", textContent);
+
+        // Gửi message đến popup/background script
+        this.sendTranscriptToExtension(textContent.trim());
+
+        // Lưu vào session storage để popup có thể truy cập
+        sessionStorage.setItem("udemy_transcript", textContent.trim());
+
+        return textContent.trim();
+      } else {
+        console.log("⚠️ Transcript panel tồn tại nhưng không có nội dung");
+        return null;
+      }
+    } catch (error) {
+      console.error("❌ Lỗi khi extract transcript:", error);
+      return null;
+    }
+  }
+
+  sendTranscriptToExtension(content) {
+    // Gửi message đến extension
+    chrome.runtime
+      .sendMessage({
+        action: "transcriptFound",
+        content: content,
+        url: window.location.href,
+      })
+      .catch((error) => {
+        console.log("Extension context không available:", error);
+      });
+  }
+
+  observeDOM() {
+    // Tạo MutationObserver để theo dõi thay đổi DOM
+    this.observer = new MutationObserver((mutations) => {
+      let shouldCheck = false;
+
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+          // Kiểm tra xem có node mới được thêm có chứa transcript không
+          for (let node of mutation.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.matches && node.matches(this.transcriptSelector)) {
+                shouldCheck = true;
+                break;
+              } else if (
+                node.querySelector &&
+                node.querySelector(this.transcriptSelector)
+              ) {
+                shouldCheck = true;
+                break;
+              }
+            }
+          }
+        }
+      });
+
+      if (shouldCheck) {
+        setTimeout(() => this.checkForTranscript(), 1000);
+      }
+    });
+
+    // Bắt đầu observe
+    this.observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  // Method để gọi từ popup
+  getCurrentTranscript() {
+    return this.checkForTranscript();
+  }
+
+  destroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  }
+}
+
+// Khởi tạo extractor
+const transcriptExtractor = new TranscriptExtractor();
+
+// Lắng nghe message từ popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "getTranscript") {
+    const transcriptElement = document.querySelector(
+      '[class*="transcript--transcript-panel"]'
+    );
+
+    if (transcriptElement) {
+      const content =
+        transcriptExtractor.extractTranscriptContent(transcriptElement);
+      sendResponse({
+        success: true,
+        content: content,
+        found: !!content,
+      });
+    } else {
+      sendResponse({
+        success: false,
+        content: null,
+        found: false,
+        message: "Không tìm thấy transcript panel",
+      });
+    }
+  }
+
+  return true; // Giữ channel mở cho async response
+});
+
+// Cleanup khi page unload
+window.addEventListener("beforeunload", () => {
+  transcriptExtractor.destroy();
+});
