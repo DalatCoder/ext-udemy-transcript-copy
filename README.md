@@ -1,109 +1,76 @@
-# Udemy Transcript Copy - Chrome Extension
+# 🎬 Udemy Tools - Chrome Extension
 
-Chrome extension để tự động phát hiện và copy transcript từ các video Udemy.
+Chrome Extension hỗ trợ học tập trên Udemy: copy transcript và tạo thư mục ghi chú theo cấu trúc khóa học.
 
 ## ✨ Tính năng
 
-- 🔍 **Tự động phát hiện**: Kiểm tra phần tử div có class bắt đầu bằng "transcript--transcript-panel"
-- 📄 **Trích xuất nội dung**: Lấy toàn bộ textContent bên trong transcript panel
-- 📋 **Copy dễ dàng**: Copy transcript vào clipboard chỉ với một click
-- 🔄 **Theo dõi real-time**: Tự động cập nhật khi transcript được load
-- 💾 **Lưu cache**: Lưu transcript vào session storage để truy cập nhanh
+### � Copy Transcript
+- Tự động mở transcript panel nếu chưa mở
+- Copy toàn bộ nội dung transcript
+- Tự động đóng panel sau khi copy
+
+### 📚 Tạo Thư mục Ghi chú
+- Trích xuất danh sách sections từ sidebar
+- Tạo lệnh `mkdir` với tên thư mục chuẩn hóa
+- Format: `01-ten-section`, `02-ten-section`...
 
 ## 🚀 Cài đặt
 
-1. **Clone hoặc download project này**
-2. **Mở Chrome và vào** `chrome://extensions/`
-3. **Bật Developer mode** ở góc trên bên phải
-4. **Click "Load unpacked"** và chọn thư mục chứa extension
-5. **Extension sẽ xuất hiện** trong danh sách và thanh công cụ
+1. Clone repository này
+2. Mở Chrome → `chrome://extensions/`
+3. Bật **Developer mode** (góc trên phải)
+4. Click **Load unpacked** → Chọn thư mục extension
+5. Extension sẽ xuất hiện trên toolbar
 
-## 📖 Cách sử dụng
+## 📖 Hướng dẫn sử dụng
 
-1. **Vào Udemy** và mở một video có transcript
-2. **Click vào icon extension** trên thanh công cụ Chrome
-3. **Extension sẽ tự động kiểm tra** và hiển thị transcript nếu có
-4. **Click "Copy to Clipboard"** để copy transcript
-5. **Dán vào ứng dụng khác** để sử dụng
+### Copy Transcript
+1. Mở video Udemy có transcript
+2. Click icon extension trên toolbar
+3. Chờ extension tìm transcript
+4. Click **Copy Transcript**
+5. Panel sẽ tự động đóng lại
 
-## 🔧 Cấu trúc project
+### Tạo thư mục Obsidian
+1. Mở trang khóa học Udemy
+2. Click icon extension → Tab **Sections**
+3. Click **Get Sections**
+4. Click **Copy mkdir Command**
+5. Mở terminal trong Obsidian vault
+6. Paste và chạy lệnh
+
+## 🔧 Cấu trúc
 
 ```
-udemy-transcript-copy/
-├── manifest.json          # Cấu hình extension
-├── content.js            # Script chạy trên trang Udemy
-├── popup.html           # Giao diện popup
-├── popup.js            # Logic cho popup
-├── background.js       # Background script
-├── icons/             # Icons cho extension
-└── README.md         # Tài liệu này
+ext-udemy-transcript-copy/
+├── manifest.json    # Cấu hình extension
+├── content.js       # Script chạy trên Udemy
+├── popup.html       # Giao diện popup
+├── popup.js         # Logic popup
+├── background.js    # Background service
+└── icons/           # Icons extension
 ```
 
-## 🛠️ Phát triển
+## � Ví dụ Output
 
-### Content Script (`content.js`)
-
-- Kiểm tra DOM để tìm transcript panel
-- Sử dụng MutationObserver để theo dõi thay đổi
-- Trích xuất và gửi nội dung transcript
-
-### Popup (`popup.html` + `popup.js`)
-
-- Giao diện người dùng
-- Hiển thị trạng thái và nội dung transcript
-- Chức năng copy to clipboard
-
-### Background Script (`background.js`)
-
-- Xử lý messages giữa các component
-- Lưu trữ dữ liệu session
-
-## 🎯 Selector được sử dụng
-
-Extension tìm kiếm phần tử với selector:
-
-```css
-[class*="transcript--transcript-panel"]
+```bash
+mkdir -p \
+  "01-welcome-welcome-welcome" \
+  "02-a-first-look-at-react" \
+  "03-working-with-components-props-and-jsx" \
+  ...
 ```
 
-Điều này có nghĩa là sẽ tìm tất cả phần tử có class chứa chuỗi "transcript--transcript-panel".
+## 🎨 Giao diện
 
-## 🔒 Quyền hạn
+- Theme tự nhiên với tông màu xanh lá
+- Thiết kế hiện đại, dễ sử dụng
+- Hỗ trợ 2 tab: Transcript & Sections
 
-Extension yêu cầu các quyền sau:
-
-- `activeTab`: Truy cập tab hiện tại
-- `scripting`: Inject content script
-- `https://*.udemy.com/*`: Hoạt động trên Udemy
-
-## 🐛 Troubleshooting
-
-### Extension không hoạt động?
-
-1. Kiểm tra xem bạn có đang ở trang Udemy không
-2. Refresh trang và thử lại
-3. Kiểm tra Console để xem lỗi (F12 > Console)
-
-### Không tìm thấy transcript?
-
-1. Đảm bảo video có bật transcript/subtitles
-2. Thử scroll xuống để transcript panel load
-3. Click "Kiểm tra lại" trong popup
-
-### Copy không hoạt động?
-
-1. Đảm bảo browser có quyền clipboard
-2. Thử click copy lại
-3. Sử dụng Ctrl+C manual nếu cần
-
-## 📝 License
+## � License
 
 MIT License - Tự do sử dụng và chỉnh sửa.
 
-## 🤝 Đóng góp
-
-Mọi góp ý và pull request đều được chào đón!
-
 ---
 
-**Lưu ý**: Extension này chỉ hoạt động trên Udemy.com và chỉ trích xuất transcript đã có sẵn trên trang.
+**Made with 💚 for Udemy learners**
