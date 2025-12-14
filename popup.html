@@ -4,30 +4,30 @@
     <meta charset="utf-8" />
     <style>
       :root {
-        --primary: #a435f0;
-        --primary-hover: #8710d8;
-        --primary-light: rgba(164, 53, 240, 0.1);
-        --success: #10b981;
-        --success-light: rgba(16, 185, 129, 0.1);
-        --error: #ef4444;
-        --error-light: rgba(239, 68, 68, 0.1);
-        --warning: #f59e0b;
-        --warning-light: rgba(245, 158, 11, 0.1);
+        --primary: #2d5a47;
+        --primary-hover: #234838;
+        --primary-light: rgba(45, 90, 71, 0.1);
+        --success: #3d7a5a;
+        --success-light: rgba(61, 122, 90, 0.1);
+        --error: #b54a4a;
+        --error-light: rgba(181, 74, 74, 0.1);
+        --warning: #b58a3d;
+        --warning-light: rgba(181, 138, 61, 0.1);
         
-        --bg-primary: #0f0f0f;
-        --bg-secondary: #1a1a1a;
-        --bg-tertiary: #252525;
-        --bg-elevated: #2a2a2a;
+        --bg-primary: #faf8f5;
+        --bg-secondary: #f5f2ed;
+        --bg-tertiary: #ebe7e0;
+        --bg-elevated: #ffffff;
         
-        --text-primary: #ffffff;
-        --text-secondary: #a1a1aa;
-        --text-muted: #71717a;
+        --text-primary: #2c2a26;
+        --text-secondary: #5c5a55;
+        --text-muted: #8c8a85;
         
-        --border: rgba(255, 255, 255, 0.08);
-        --border-hover: rgba(255, 255, 255, 0.15);
+        --border: rgba(0, 0, 0, 0.08);
+        --border-hover: rgba(0, 0, 0, 0.15);
         
-        --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
       }
 
       * {
@@ -47,7 +47,7 @@
 
       /* Header */
       .header {
-        background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+        background: linear-gradient(135deg, #3d6b56 0%, #2d5a47 100%);
         padding: 20px;
         text-align: center;
         position: relative;
@@ -132,7 +132,7 @@
       .tab-btn.active {
         background: var(--primary);
         color: white;
-        box-shadow: 0 4px 12px rgba(164, 53, 240, 0.4);
+        box-shadow: 0 4px 12px rgba(45, 90, 71, 0.4);
       }
 
       .tab-btn .badge {
@@ -264,7 +264,7 @@
 
       /* Code Block */
       .code-block {
-        background: #0d0d0d;
+        background: #3a3835;
         border: 1px solid var(--border);
         border-radius: 12px;
         padding: 14px;
@@ -276,7 +276,7 @@
         white-space: pre-wrap;
         word-break: break-all;
         margin-bottom: 12px;
-        color: #10b981;
+        color: #8fbc8f;
       }
 
       .code-block::-webkit-scrollbar {
@@ -327,14 +327,14 @@
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+        background: linear-gradient(135deg, #3d6b56 0%, #2d5a47 100%);
         color: white;
-        box-shadow: 0 4px 15px rgba(164, 53, 240, 0.3);
+        box-shadow: 0 4px 15px rgba(45, 90, 71, 0.3);
       }
 
       .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(164, 53, 240, 0.4);
+        box-shadow: 0 6px 20px rgba(45, 90, 71, 0.4);
       }
 
       .btn-primary:active {
@@ -366,14 +366,14 @@
       }
 
       .btn-success {
-        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        background: linear-gradient(135deg, #4a8a6a 0%, #3d7a5a 100%);
         color: white;
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 15px rgba(61, 122, 90, 0.3);
       }
 
       .btn-success:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 6px 20px rgba(61, 122, 90, 0.4);
       }
 
       .btn-success:disabled {
