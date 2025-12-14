@@ -1,4 +1,4 @@
-// Popup script để tương tác với user
+// Popup script - Modern UI Controller
 class PopupController {
   constructor() {
     // Transcript elements
@@ -35,13 +35,13 @@ class PopupController {
     // Bind transcript event listeners
     this.refreshBtn.addEventListener("click", () => this.refreshTranscript());
     this.copyTranscriptBtn.addEventListener("click", () =>
-      this.copyToClipboard(this.currentTranscript, this.copyTranscriptBtn)
+      this.copyToClipboard(this.currentTranscript, this.copyTranscriptBtn, "📋 Copy Transcript")
     );
 
     // Bind sections event listeners
     this.getSectionsBtn.addEventListener("click", () => this.getSections());
     this.copyMkdirBtn.addEventListener("click", () =>
-      this.copyToClipboard(this.mkdirCommand, this.copyMkdirBtn)
+      this.copyToClipboard(this.mkdirCommand, this.copyMkdirBtn, "📁 Copy mkdir Command")
     );
 
     // Auto check transcript khi popup mở
@@ -66,7 +66,7 @@ class PopupController {
 
   async checkTranscript() {
     try {
-      this.setStatus(this.transcriptStatusEl, "loading", "Đang kiểm tra transcript...");
+      this.setStatus(this.transcriptStatusEl, "loading", "Checking for transcript...");
 
       const tabs = await chrome.tabs.query({
         active: true,
@@ -75,12 +75,12 @@ class PopupController {
       const activeTab = tabs[0];
 
       if (!activeTab) {
-        this.setStatus(this.transcriptStatusEl, "error", "Không thể truy cập tab hiện tại");
+        this.setStatus(this.transcriptStatusEl, "error", "Cannot access current tab");
         return;
       }
 
       if (!activeTab.url.includes("udemy.com")) {
-        this.setStatus(this.transcriptStatusEl, "error", "Extension chỉ hoạt động trên Udemy.com");
+        this.setStatus(this.transcriptStatusEl, "error", "Please open a Udemy course page");
         return;
       }
 
@@ -90,7 +90,7 @@ class PopupController {
 
       if (response && response.success && response.found) {
         this.currentTranscript = response.content;
-        this.setStatus(this.transcriptStatusEl, "success", "Đã tìm thấy transcript!");
+        this.setStatus(this.transcriptStatusEl, "success", "Transcript found!");
         this.displayTranscript(response.content);
         this.copyTranscriptBtn.disabled = false;
       } else {
@@ -98,7 +98,7 @@ class PopupController {
         this.setStatus(
           this.transcriptStatusEl,
           "error",
-          response?.message || "Không tìm thấy transcript panel"
+          response?.message || "No transcript panel found"
         );
         this.displayTranscript(null);
         this.copyTranscriptBtn.disabled = true;
@@ -108,7 +108,7 @@ class PopupController {
       this.setStatus(
         this.transcriptStatusEl,
         "error",
-        "Lỗi kết nối. Hãy refresh trang và thử lại."
+        "Connection error. Please refresh the page."
       );
       this.displayTranscript(null);
       this.copyTranscriptBtn.disabled = true;
@@ -117,7 +117,7 @@ class PopupController {
 
   async getSections() {
     try {
-      this.setStatus(this.sectionsStatusEl, "loading", "Đang lấy danh sách sections...");
+      this.setStatus(this.sectionsStatusEl, "loading", "Loading sections...");
       this.getSectionsBtn.disabled = true;
 
       const tabs = await chrome.tabs.query({
@@ -127,13 +127,13 @@ class PopupController {
       const activeTab = tabs[0];
 
       if (!activeTab) {
-        this.setStatus(this.sectionsStatusEl, "error", "Không thể truy cập tab hiện tại");
+        this.setStatus(this.sectionsStatusEl, "error", "Cannot access current tab");
         this.getSectionsBtn.disabled = false;
         return;
       }
 
       if (!activeTab.url.includes("udemy.com")) {
-        this.setStatus(this.sectionsStatusEl, "error", "Extension chỉ hoạt động trên Udemy.com");
+        this.setStatus(this.sectionsStatusEl, "error", "Please open a Udemy course page");
         this.getSectionsBtn.disabled = false;
         return;
       }
@@ -147,7 +147,7 @@ class PopupController {
         this.setStatus(
           this.sectionsStatusEl,
           "success",
-          `Đã tìm thấy ${response.count} sections!`
+          `Found ${response.count} sections!`
         );
         this.displaySections(response.sections);
         this.generateMkdirCommand(response.sections);
@@ -158,9 +158,9 @@ class PopupController {
         this.sectionCountEl.style.display = "inline";
       } else {
         this.currentSections = [];
-        this.setStatus(this.sectionsStatusEl, "error", "Không tìm thấy sections");
-        this.sectionsContentEl.className = "content-area empty";
-        this.sectionsContentEl.textContent = "Chưa có sections...";
+        this.setStatus(this.sectionsStatusEl, "error", "No sections found");
+        this.sectionsContentEl.className = "content-box empty";
+        this.sectionsContentEl.textContent = "No sections found yet...";
         this.mkdirCodeEl.style.display = "none";
         this.copyMkdirBtn.disabled = true;
       }
@@ -171,7 +171,7 @@ class PopupController {
       this.setStatus(
         this.sectionsStatusEl,
         "error",
-        "Lỗi kết nối. Hãy refresh trang và thử lại."
+        "Connection error. Please refresh the page."
       );
       this.getSectionsBtn.disabled = false;
     }
@@ -196,13 +196,22 @@ class PopupController {
   }
 
   displaySections(sections) {
-    this.sectionsContentEl.className = "content-area";
+    this.sectionsContentEl.className = "content-box";
     const ul = document.createElement("ul");
     ul.className = "sections-list";
 
     sections.forEach((section, index) => {
       const li = document.createElement("li");
-      li.textContent = `${index + 1}. ${section}`;
+      
+      const numSpan = document.createElement("span");
+      numSpan.className = "section-num";
+      numSpan.textContent = String(index + 1).padStart(2, '0');
+      
+      const textSpan = document.createElement("span");
+      textSpan.textContent = section;
+      
+      li.appendChild(numSpan);
+      li.appendChild(textSpan);
       ul.appendChild(li);
     });
 
@@ -212,16 +221,15 @@ class PopupController {
 
   async refreshTranscript() {
     this.refreshBtn.disabled = true;
-    this.refreshBtn.innerHTML =
-      '<span class="loading-spinner"></span> Đang kiểm tra...';
+    this.refreshBtn.innerHTML = '<span class="spinner"></span> Refreshing...';
 
     await this.checkTranscript();
 
     this.refreshBtn.disabled = false;
-    this.refreshBtn.innerHTML = "🔄 Kiểm tra lại";
+    this.refreshBtn.innerHTML = "🔄 Refresh";
   }
 
-  async copyToClipboard(content, button) {
+  async copyToClipboard(content, button, originalLabel) {
     if (!content) {
       return;
     }
@@ -230,45 +238,51 @@ class PopupController {
       await navigator.clipboard.writeText(content);
 
       // Show success feedback
-      const originalText = button.innerHTML;
-      const originalBg = button.style.backgroundColor;
-      button.innerHTML = "✅ Đã copy!";
-      button.style.backgroundColor = "#28a745";
+      const originalHTML = button.innerHTML;
+      button.innerHTML = "✅ Copied!";
+      button.classList.add("copied");
 
       setTimeout(() => {
-        button.innerHTML = originalText;
-        button.style.backgroundColor = originalBg;
+        button.innerHTML = originalLabel;
+        button.classList.remove("copied");
       }, 2000);
     } catch (error) {
       console.error("Copy failed:", error);
+      button.innerHTML = "❌ Failed";
+      setTimeout(() => {
+        button.innerHTML = originalLabel;
+      }, 2000);
     }
   }
 
   setStatus(element, type, message) {
-    element.className = `status ${type}`;
+    element.className = `status-card ${type}`;
 
-    if (type === "loading") {
-      element.innerHTML = '<span class="loading-spinner"></span>' + message;
-    } else {
-      let icon = "";
-      switch (type) {
-        case "success":
-          icon = "✅";
-          break;
-        case "error":
-          icon = "❌";
-          break;
-        default:
-          icon = "ℹ️";
-          break;
-      }
-      element.innerHTML = icon + " " + message;
+    let iconHTML = "";
+    switch (type) {
+      case "loading":
+        iconHTML = '<span class="spinner"></span>';
+        break;
+      case "success":
+        iconHTML = "✅";
+        break;
+      case "error":
+        iconHTML = "❌";
+        break;
+      default:
+        iconHTML = "ℹ️";
+        break;
     }
+
+    element.innerHTML = `
+      <span class="status-icon">${iconHTML}</span>
+      <span>${message}</span>
+    `;
   }
 
   displayTranscript(content) {
     if (content && content.trim()) {
-      this.transcriptContentEl.className = "content-area";
+      this.transcriptContentEl.className = "content-box";
 
       const formattedContent = content
         .split("\n")
@@ -278,13 +292,13 @@ class PopupController {
 
       this.transcriptContentEl.textContent = formattedContent;
     } else {
-      this.transcriptContentEl.className = "content-area empty";
-      this.transcriptContentEl.textContent = "Chưa có nội dung transcript...";
+      this.transcriptContentEl.className = "content-box empty";
+      this.transcriptContentEl.textContent = "No transcript available yet...";
     }
   }
 }
 
-// Khởi tạo popup controller khi DOM ready
+// Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   new PopupController();
 });
