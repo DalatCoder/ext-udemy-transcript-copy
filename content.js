@@ -204,6 +204,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
 
+  // Handle closeTranscriptPanel action - close panel after copying
+  if (request.action === "closeTranscriptPanel") {
+    const toggleButton = document.querySelector('[data-purpose="transcript-toggle"]');
+    const transcriptPanel = document.querySelector('[class*="transcript--transcript-panel"]');
+    
+    // Only close if panel is currently open
+    if (toggleButton && transcriptPanel) {
+      console.log("📕 Closing transcript panel...");
+      toggleButton.click();
+      sendResponse({ success: true, message: "Panel closed" });
+    } else {
+      sendResponse({ success: false, message: "Panel not open or button not found" });
+    }
+  }
+
   return true; // Giữ channel mở cho async response
 });
 

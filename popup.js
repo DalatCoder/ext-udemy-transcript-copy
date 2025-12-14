@@ -34,9 +34,7 @@ class PopupController {
 
     // Bind transcript event listeners
     this.refreshBtn.addEventListener("click", () => this.refreshTranscript());
-    this.copyTranscriptBtn.addEventListener("click", () =>
-      this.copyToClipboard(this.currentTranscript, this.copyTranscriptBtn, "📋 Copy Transcript")
-    );
+    this.copyTranscriptBtn.addEventListener("click", () => this.copyTranscriptAndClose());
 
     // Bind sections event listeners
     this.getSectionsBtn.addEventListener("click", () => this.getSections());
@@ -217,6 +215,44 @@ class PopupController {
 
     this.sectionsContentEl.innerHTML = "";
     this.sectionsContentEl.appendChild(ul);
+  }
+
+  async copyTranscriptAndClose() {
+    if (!this.currentTranscript) {
+      return;
+    }
+
+    try {
+      // Copy to clipboard
+      await navigator.clipboard.writeText(this.currentTranscript);
+
+      // Show success feedback
+      const originalHTML = this.copyTranscriptBtn.innerHTML;
+      this.copyTranscriptBtn.innerHTML = "✅ Copied!";
+
+      // Close the transcript panel
+      const tabs = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      const activeTab = tabs[0];
+
+      if (activeTab) {
+        chrome.tabs.sendMessage(activeTab.id, {
+          action: "closeTranscriptPanel",
+        }).catch((err) => console.log("Could not close panel:", err));
+      }
+
+      setTimeout(() => {
+        this.copyTranscriptBtn.innerHTML = "📋 Copy Transcript";
+      }, 2000);
+    } catch (error) {
+      console.error("Copy failed:", error);
+      this.copyTranscriptBtn.innerHTML = "❌ Failed";
+      setTimeout(() => {
+        this.copyTranscriptBtn.innerHTML = "📋 Copy Transcript";
+      }, 2000);
+    }
   }
 
   async refreshTranscript() {
