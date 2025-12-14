@@ -182,6 +182,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })();
   }
 
+  // Handle getSections action
+  if (request.action === "getSections") {
+    const sectionSelector = 'span.ud-accordion-panel-title span.truncate-with-tooltip--ellipsis--YJw4N';
+    const sections = document.querySelectorAll(sectionSelector);
+    
+    const sectionTitles = [];
+    sections.forEach((section) => {
+      const title = section.textContent.trim();
+      if (title) {
+        sectionTitles.push(title);
+      }
+    });
+
+    console.log("📚 Found", sectionTitles.length, "sections");
+    
+    sendResponse({
+      success: true,
+      sections: sectionTitles,
+      count: sectionTitles.length,
+    });
+  }
+
   return true; // Giữ channel mở cho async response
 });
 
