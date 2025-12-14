@@ -176,15 +176,29 @@ class PopupController {
   }
 
   generateMkdirCommand(sections) {
-    // Sanitize folder names: remove/replace invalid characters
-    const sanitizedFolders = sections.map((section) => {
-      return section
-        .replace(/[\/\\:*?"<>|]/g, "-") // Replace invalid chars with dash
-        .replace(/\s+/g, " ") // Normalize whitespace
+    // Transform section titles to clean folder names
+    // "Section 1: Welcome, Welcome, Welcome!" → "01-welcome-welcome-welcome"
+    const sanitizedFolders = sections.map((section, index) => {
+      // Extract just the title part after "Section X:"
+      let title = section
+        .replace(/^Section\s+\d+:\s*/i, '') // Remove "Section X:" prefix
+        .replace(/^PART\s+\d+:\s*/i, '')    // Remove "PART X:" prefix if exists
         .trim();
+      
+      // Convert to kebab-case
+      const kebabName = title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')           // Remove special chars except spaces and dashes
+        .replace(/\s+/g, '-')               // Replace spaces with dashes
+        .replace(/-+/g, '-')                // Collapse multiple dashes
+        .replace(/^-|-$/g, '');             // Remove leading/trailing dashes
+      
+      // Add zero-padded number prefix
+      const num = String(index + 1).padStart(2, '0');
+      return `${num}-${kebabName}`;
     });
 
-    // Generate mkdir command with quoted folder names
+    // Generate mkdir command
     const folderArgs = sanitizedFolders.map((f) => `"${f}"`).join(" \\\n  ");
     this.mkdirCommand = `mkdir -p \\\n  ${folderArgs}`;
 
