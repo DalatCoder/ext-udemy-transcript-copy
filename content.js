@@ -2,6 +2,7 @@
 class TranscriptExtractor {
   constructor() {
     this.transcriptSelector = '[class*="transcript--transcript-panel"]';
+    this.toggleButtonSelector = '[data-purpose="transcript-toggle"]';
     this.observer = null;
     this.init();
   }
@@ -14,8 +15,35 @@ class TranscriptExtractor {
     this.observeDOM();
   }
 
-  checkForTranscript() {
-    const transcriptElement = document.querySelector(this.transcriptSelector);
+  // Click toggle button để mở transcript panel
+  async toggleTranscriptPanel() {
+    const toggleButton = document.querySelector(this.toggleButtonSelector);
+    
+    if (toggleButton) {
+      console.log("🔘 Đang click nút toggle transcript...");
+      toggleButton.click();
+      
+      // Đợi panel load
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return true;
+    } else {
+      console.log("⚠️ Không tìm thấy nút toggle transcript");
+      return false;
+    }
+  }
+
+  async checkForTranscript() {
+    let transcriptElement = document.querySelector(this.transcriptSelector);
+
+    // Nếu không tìm thấy panel, thử click toggle button
+    if (!transcriptElement) {
+      console.log("⏳ Chưa tìm thấy transcript panel, đang thử mở...");
+      const clicked = await this.toggleTranscriptPanel();
+      
+      if (clicked) {
+        transcriptElement = document.querySelector(this.transcriptSelector);
+      }
+    }
 
     if (transcriptElement) {
       console.log("🎯 Transcript panel được tìm thấy!");
@@ -121,26 +149,37 @@ const transcriptExtractor = new TranscriptExtractor();
 // Lắng nghe message từ popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getTranscript") {
-    const transcriptElement = document.querySelector(
-      '[class*="transcript--transcript-panel"]'
-    );
+    (async () => {
+      let transcriptElement = document.querySelector(
+        '[class*="transcript--transcript-panel"]'
+      );
 
-    if (transcriptElement) {
-      const content =
-        transcriptExtractor.extractTranscriptContent(transcriptElement);
-      sendResponse({
-        success: true,
-        content: content,
-        found: !!content,
-      });
-    } else {
-      sendResponse({
-        success: false,
-        content: null,
-        found: false,
-        message: "Không tìm thấy transcript panel",
-      });
-    }
+      // Nếu panel chưa mở, thử click toggle button
+      if (!transcriptElement) {
+        console.log("📌 Panel chưa mở, đang thử click toggle...");
+        await transcriptExtractor.toggleTranscriptPanel();
+        transcriptElement = document.querySelector(
+          '[class*="transcript--transcript-panel"]'
+        );
+      }
+
+      if (transcriptElement) {
+        const content =
+          transcriptExtractor.extractTranscriptContent(transcriptElement);
+        sendResponse({
+          success: true,
+          content: content,
+          found: !!content,
+        });
+      } else {
+        sendResponse({
+          success: false,
+          content: null,
+          found: false,
+          message: "Không tìm thấy transcript panel",
+        });
+      }
+    })();
   }
 
   return true; // Giữ channel mở cho async response
